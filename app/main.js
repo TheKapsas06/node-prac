@@ -26,8 +26,10 @@ initUsers(false);
 function getSteamIdFromUser(){
     return new Promise((resolve, reject)=>{
         rl.question('Enter user steam64id: ', (input)=>{
-            const id = parseInt(input)
-            if (!isNaN(id)) {
+            // Keep check and id input variable different as parse int causes big numbers to break
+            const checkID = parseInt(input);
+            const id = input;
+            if (!isNaN(checkID)) {
                 resolve(id);
             } else {
                 reject(outLog('Input was not a number'));
@@ -48,10 +50,14 @@ async function findUser(id){
 function showResults(result, id){
     // If user was found then print it. If it was not found let the user know. 
     if ( typeof result != 'undefined' ){
-        outLog(`Found user: ${result.steam64id}. Discord name: ${result.discord_name}`)
+        outLog(`Found user: ${id}. Discord name: ${result.discord_name}`)
         outLog(`Print all user parameters:`)
         Object.entries(result).forEach( ([key,value]) => {
-            outLog(`${key}: ${value}`);
+            if (key == 'steam64id'){
+                outLog(`steam64id: ${id}`)
+            } else {
+                outLog(`${key}: ${String(value)}`);
+            }
         });
     } else {
         outLog(`User with the id ${id} was not found`);
@@ -63,9 +69,9 @@ async function main(){
     // Get user input
     const id = await getSteamIdFromUser();
     // find user based on user input
-    const result = await findUser(id);
+    const result = await findUser(`${id}`);
     // If user was found then print it. If it was not found let the user know.
-    showResults(result, id);
+    showResults(result, `${id}`)
     process.exit(0);
 }
 
