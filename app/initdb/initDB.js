@@ -1,5 +1,6 @@
 const mysql = require('mysql2');
-const { handleError,outLog } = require('./Logging');
+const config = require('../config/config.json')
+const { handleError,outLog } = require('../Logging');
 
 // Function to create a new database
 function createDatabase(databaseName, connection) {
@@ -15,15 +16,15 @@ function initdb(run) {
     // run only if user wants it.
     if (run){
         const sqlInit = mysql.createConnection({
-            host: 'localhost',
-            user: 'root',
-            password: 'test'
+            host: config.database.host,
+            user: config.database.user,
+            password: config.database.password,
         });
         sqlInit.connect(err=>{
             handleError(err);
             outLog('initDb: Connection started')
         })
-        createDatabase('test', sqlInit);
+        createDatabase(config.database.database, sqlInit);
         sqlInit.end(err => {
             handleError(err);
             outLog('initDb: Connection closed')

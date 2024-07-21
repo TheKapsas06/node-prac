@@ -1,79 +1,32 @@
 // Import logging and database creation
-const { initdb } = require('./initDB');
+const { initdb } = require('./initdb/initDB');
 const { outLog } = require('./Logging');
+const { initUsers } = require('./initdb/initUsers');
+const { dsbotMain } = require('./discord/main')
 
-// Create a readline interface
-const readline = require('readline')
-const rl = readline.Interface({
-    input: process.stdin,
-    output: process.stdout
-});
 
-// Create a database in mysql to connect to.
-initdb(false);
+// Get init command from commandline
+const args = process.argv.slice(2);
 
-// Initzialise main database connection only after creating the database
-const { sql } = require('./sql');
+async function initProgram(){
+    // Create a database in mysql to connect to.
+    initdb(true);
 
-// Get initUser to create example users
-// Get createUser to create users
-const { initUsers, createUser } = require('./initUsers');
-
-// Create example users
-initUsers(false);
-
-// Get user input
-function getSteamIdFromUser(){
-    return new Promise((resolve, reject)=>{
-        rl.question('Enter user steam64id: ', (input)=>{
-            // Keep check and id input variable different as parse int causes big numbers to break
-            const checkID = parseInt(input);
-            const id = input;
-            if (!isNaN(checkID)) {
-                resolve(id);
-            } else {
-                reject(outLog('Input was not a number'));
-                process.exit(1);
-            }
-        });
-    });
-}
-// Create a promise function to return found users
-async function findUser(id){    
-    const query = `SELECT * FROM users WHERE steam64id='${id}';`
-    const result = await sql.promise().query(query)
-    return new Promise((resolve)=>{
-        resolve(result[0][0]);
-    });
-}
-
-function showResults(result, id){
-    // If user was found then print it. If it was not found let the user know. 
-    if ( typeof result != 'undefined' ){
-        outLog(`Found user: ${id}. Discord name: ${result.discord_name}`)
-        outLog(`Print all user parameters:`)
-        Object.entries(result).forEach( ([key,value]) => {
-            if (key == 'steam64id'){
-                outLog(`steam64id: ${id}`)
-            } else {
-                outLog(`${key}: ${String(value)}`);
-            }
-        });
-    } else {
-        outLog(`User with the id ${id} was not found`);
-    }
+    // Create example users
+    initUsers(true);
 }
 
 // main function
-async function main(){
-    // Get user input
-    const id = await getSteamIdFromUser();
-    // find user based on user input
-    const result = await findUser(`${id}`);
-    // If user was found then print it. If it was not found let the user know.
-    showResults(result, `${id}`)
-    process.exit(0);
+function main(){
+    // If we get `node app/main.js init` then init the database and do nothing else
+    if (args[0] === 'init'){
+        // init 
+        initProgram();
+    } else {
+        // start discord bot
+        outLog('Start bot process');
+        dsbotMain();
+    }
 }
-
 
 main();

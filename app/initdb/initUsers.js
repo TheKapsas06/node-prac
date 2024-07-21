@@ -1,5 +1,4 @@
-const { handleError,outLog } = require("./Logging");
-const { sql } = require("./sql");
+const { createTable, createUser } = require('../dbAct/create');
 
 //////////////////////
 // Variables
@@ -38,43 +37,6 @@ const users = [
 //////////////////////
 
 
-// Function to create new items into the database
-function createTable(name, fieldsIn) {
-    // change array into sql formated fields
-    const fields = fieldsIn.map(field => {
-        return `${sql.escapeId(field.key)} ${field.value}`;
-    }).join(", ");
-    // Create query
-    const query = `CREATE TABLE IF NOT EXISTS ${sql.escapeId(name)} (${fields});`;
-    // create the table
-    sql.query(query, (err) => {
-        handleError(err);
-        outLog(`Created table ${name}`);
-    });
-}
-
-function generateCreateUserQuery(dup){
-    if (dup) {
-        const query = "INSERT INTO users (`steam64id`, `discord_name`, `age`, `email`, `rank`) VALUES (?, ?, ?, ?, ?)";
-        return query;
-    }; 
-    if (!dup) {
-        const query = "INSERT IGNORE INTO users (`steam64id`, `discord_name`, `age`, `email`, `rank`) VALUES (?, ?, ?, ?, ?)";
-        return query;
-    }; 
-}
-
-// Creates a user with required parameters to users table
-function createUser(steam64ID, discordName, age, email, rank, dupCheck = true){
-    const query = generateCreateUserQuery(dupCheck);
-    
-    sql.query(query, [steam64ID, discordName, age, email, rank], err=>{
-        handleError(err);
-        outLog(`User created with steamid ${steam64ID}. Users discord: ${discordName}.`)
-    });
-}
-// Create User is used in ./main.js
-exports.createUser = createUser;
 
 // uses arrays to create tables and users
 function initUsers(run) {

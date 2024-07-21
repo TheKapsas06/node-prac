@@ -1,0 +1,14 @@
+{
+    "discord": {
+        "token": "YOUR-TOKEN-HERE"
+    },
+    "bot": {
+        "prefix": "/runbot"
+    },
+    "database": {
+        "host": "localhost",
+        "user": "root",
+        "password": "test",
+        "database": "test"
+    }
+}
